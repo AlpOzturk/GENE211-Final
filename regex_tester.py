@@ -2,6 +2,7 @@
 import re
 
 DISEASES_LIST = "diseases.txt"
+OUTFILE_NAME = "temp.txt"
 
 def run():
     diseasesList = list()
@@ -9,13 +10,16 @@ def run():
     for line in diseasesFile:
         diseasesList.append(line.strip())
     diseasesFile.close()
+    outFile = open(OUTFILE_NAME, "w")
     while(True):
-        regexStr =  raw_input("Query disease list with regex (q to quit): ")
+        regexStr = raw_input("Query disease list with regex (q to quit): ")
         if regexStr == "q":
             break
         for disease in diseasesList:
             if regexMatch(regexStr, disease):
+                outFile.write(disease + "\n")
                 print disease
+    outFile.close()
 
 
 def regexMatch(regexStr, disease):
