@@ -15,4 +15,5 @@ def parseDisGenNet(inputFileName):
             splitLine = line.strip().split(DELIMITER)
             association = (splitLine[GENE_INDEX], splitLine[DISEASE_INDEX], float(splitLine[SCORE_INDEX]))
             associations.add(association)
+    inputFile.close()
     return associations
