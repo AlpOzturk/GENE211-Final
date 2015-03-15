@@ -22,6 +22,8 @@ CUTOFF_LIST = [0.0, 0.1]
 
 OUTPUT_IMAGE_NAMES = ["diseaseDentrogram.png", "diseaseDentrogramCutoff.png",]
 LEAF_FONT_SIZE = 7.5
+GENE_ANALYSIS_OUTPUT_FILE = "gene_out.txt"
+
 
 def run():
     print "Getting target disorders and regexes..."
@@ -46,12 +48,40 @@ def run():
 
 def conductGeneAnalysis(geneList, disorderMap):
     resultList = list()
+    disorderList = sorted(disorderMap.keys())
     for gene in geneList:
         disorders = [disorder for disorder in disorderMap if gene in disorderMap[disorder]]
-        resultList.append((gene, len(disorders)))
-    resultList = sorted(resultList,key=lambda x: x[1], reverse=True)
-    print resultList
-    print len(resultList)
+        resultList.append((gene, disorders))
+    resultList = sorted(resultList,key=lambda x: len(x[1]), reverse=True)
+    maxOverlap = len(resultList[0][1])
+    overlapMap = dict()
+    pooledOverlap = getCounterList(maxOverlap + 1)
+    for disorder in disorderList:
+        # Remember, this will be 1-indexed
+        overlapMap[disorder] = getCounterList(maxOverlap + 1)
+    for result in resultList:
+        gene, disorders = result
+        for disorder in disorders:
+            overlapMap[disorder][len(disorders)] += 1
+        pooledOverlap[len(disorders)] += 1
+    #print resultList
+    #print len(resultList)
+    #print disorderList
+    print pooledOverlap
+    print getProbList(pooledOverlap)
+    for disorder in disorderList:
+        print disorder
+        print overlapMap[disorder]
+        print getProbList(overlapMap[disorder])
+
+def getCounterList(length):
+    return [0 for i in range(length)]
+
+def getProbList(countList):
+    total = sum(countList)
+    return [float(count) / total for count in countList]
+
+
 
 def getTargetDisorderMap():
     inputFile = open(TARGET_FILE_NAME, "r")
