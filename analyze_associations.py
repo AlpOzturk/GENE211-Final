@@ -18,8 +18,9 @@ ASSOC_GENE_INDEX = 0
 ASSOC_DISEASE_INDEX = 1
 ASSOC_SCORE_INDEX = 2
 
-SCORE_CUTOFF = 0.1
+CUTOFF_LIST = [0.0, 0.1]
 
+OUTPUT_IMAGE_NAMES = ["diseaseDentrogram.png", "diseaseDentrogramCutoff.png",]
 LEAF_FONT_SIZE = 7.5
 
 def run():
@@ -27,27 +28,30 @@ def run():
     regexMap = getTargetDisorderMap()
     print "Parsing input data..."
     associations = parseDisGenNet(ALL_FILE_NAME)
-    disorderMap, scoreMap = processAssociations(associations, regexMap)
-    print "Pruning gene list"
-    geneList = set()
-    print "Genes per disorder:"
-    for disorder in disorderMap:
-        print disorder + ": " + str(len(disorderMap[disorder]))
-        geneList = geneList.union(disorderMap[disorder])
-    geneList = list(geneList)
-    geneList.sort()
-    print "Performing Heirarchical Clustering ..."
-    performHeirarchicalClustering(geneList, disorderMap, scoreMap)
-    print "Conducting genetic analysis ..."
-    conductGeneAnalysis(geneList, disorderMap)
+    for i in range(len(CUTOFF_LIST)): 
+        cutoff = CUTOFF_LIST[i]
+        print "Processing for cutoff: " + str(cutoff)
+        disorderMap, scoreMap = processAssociations(associations, regexMap, cutoff)
+        geneList = set()
+        print "Genes per disorder:"
+        for disorder in disorderMap:
+            print disorder + ": " + str(len(disorderMap[disorder]))
+            geneList = geneList.union(disorderMap[disorder])
+        geneList = list(geneList)
+        geneList.sort()
+        print "Performing Heirarchical Clustering ..."
+        performHeirarchicalClustering(geneList, disorderMap, scoreMap, i)
+        print "Conducting genetic analysis ..."
+        conductGeneAnalysis(geneList, disorderMap)
 
 def conductGeneAnalysis(geneList, disorderMap):
     resultList = list()
     for gene in geneList:
         disorders = [disorder for disorder in disorderMap if gene in disorderMap[disorder]]
         resultList.append((gene, len(disorders)))
-    resultList = sorted(resultList,key=lambda x: x[1])
+    resultList = sorted(resultList,key=lambda x: x[1], reverse=True)
     print resultList
+    print len(resultList)
 
 def getTargetDisorderMap():
     inputFile = open(TARGET_FILE_NAME, "r")
@@ -58,12 +62,12 @@ def getTargetDisorderMap():
     inputFile.close()
     return regexMap
 
-def processAssociations(associations, regexMap):
+def processAssociations(associations, regexMap, scoreCutoff):
     disorderMap = dict()
     scoreMap = dict() 
     for association in associations:
         gene, disease, score = association
-        if score > SCORE_CUTOFF:
+        if score > scoreCutoff:
             for regexStr in regexMap:
                 if regexMatch(regexStr, disease):
                     actualDisorder = regexMap[regexStr]
@@ -75,7 +79,7 @@ def processAssociations(associations, regexMap):
                     break
     return disorderMap, scoreMap
 
-def performHeirarchicalClustering(geneList, disorderMap, scoreMap):
+def performHeirarchicalClustering(geneList, disorderMap, scoreMap, imageNameIndex):
     dataMatrix = list() 
     disorderList = list(disorderMap.keys())
     disorderList.sort()
@@ -87,7 +91,7 @@ def performHeirarchicalClustering(geneList, disorderMap, scoreMap):
     dendrogram = hier.dendrogram(linkageMatrix, labels=disorderList, leaf_font_size = LEAF_FONT_SIZE)
     #leaves = dendrogram["leaves"]
     #reorderedData = dataMatrix[leaves,:]
-    pylab.savefig( "diseaseDentrogram.png" )
+    pylab.savefig(OUTPUT_IMAGE_NAMES[imageNameIndex])
     pylab.cla()
 
 run()
