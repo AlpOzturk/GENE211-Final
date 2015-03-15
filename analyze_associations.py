@@ -20,6 +20,8 @@ ASSOC_SCORE_INDEX = 2
 
 SCORE_CUTOFF = 0.1
 
+LEAF_FONT_SIZE = 7.5
+
 def run():
     print "Getting target disorders and regexes..."
     regexMap = getTargetDisorderMap()
@@ -46,9 +48,9 @@ def performHeirarchicalClustering(geneList, disorderMap, scoreMap):
     dataMatrix = numpy.array(dataMatrix)
     distanceMatrix = dist.squareform(dist.pdist(dataMatrix))
     linkageMatrix = hier.linkage(distanceMatrix)
-    dendrogram = hier.dendrogram(linkageMatrix)
-    leaves = dendrogram["leaves"]
-    reorderedData = dataMatrix[leaves,:]
+    dendrogram = hier.dendrogram(linkageMatrix, labels=disorderList, leaf_font_size = LEAF_FONT_SIZE)
+    #leaves = dendrogram["leaves"]
+    #reorderedData = dataMatrix[leaves,:]
     pylab.savefig( "diseaseDentrogram.png" )
     pylab.cla()
 
