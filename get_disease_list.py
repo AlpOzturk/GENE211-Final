@@ -11,8 +11,7 @@ def updateDiseaseList():
     diseases = list(diseases)
     diseases.sort()
     outFile = open(OUT_FILE_NAME, "w")
-    for disease in diseases:
-        outFile.write(disease + "\n")
+    outFile.write("\n".join(diseases))
     outFile.close()
 
 updateDiseaseList()

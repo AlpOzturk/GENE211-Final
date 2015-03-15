@@ -11,7 +11,7 @@ def parseDisGenNet(inputFileName):
     for line in inputFile:
         if isFirst:
             isFirst = False
-        else:
+        elif line:
             splitLine = line.strip().split(DELIMITER)
             association = (splitLine[GENE_INDEX], splitLine[DISEASE_INDEX], float(splitLine[SCORE_INDEX]))
             associations.add(association)
