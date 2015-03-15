@@ -21,7 +21,6 @@ def run():
                 print disease
     outFile.close()
 
-
 def regexMatch(regexStr, disease):
     regex = re.compile(regexStr.lower())
     return regex.match(disease.lower())
