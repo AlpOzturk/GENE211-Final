@@ -1,6 +1,7 @@
 
 import sys
 import numpy
+import pylab
 import scipy
 import scipy.cluster.hierarchy as hier
 import scipy.spatial.distance as dist
@@ -38,15 +39,18 @@ def run():
 
 def performHeirarchicalClustering(geneList, disorderMap, scoreMap):
     dataMatrix = list() 
-    disorderList = list(disorderMap.keys()).sorted()
+    disorderList = list(disorderMap.keys())
+    disorderList.sort()
     for disorder in disorderList:
         dataMatrix.append([scoreMap.get((disorder, gene), 0.0) for gene in geneList])
     dataMatrix = numpy.array(dataMatrix)
-    distanceMatrix = dist.squareform(dist.pdist(data))
+    distanceMatrix = dist.squareform(dist.pdist(dataMatrix))
     linkageMatrix = hier.linkage(distanceMatrix)
     dendrogram = hier.dendrogram(linkageMatrix)
-    leaves = dendro["leaves"]
+    leaves = dendrogram["leaves"]
     reorderedData = dataMatrix[leaves,:]
+    pylab.savefig( "diseaseDentrogram.png" )
+    pylab.cla()
 
 #get your data into a 2d array where rows are genes, and columns 
 #are conditions
