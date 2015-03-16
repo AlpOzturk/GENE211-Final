@@ -21,8 +21,8 @@ ASSOC_SCORE_INDEX = 2
 CUTOFF_LIST = [0.0, 0.1]
 
 OUTPUT_IMAGE_NAMES = ["diseaseDentrogram.png", "diseaseDentrogramCutoff.png",]
+OUTPUT_FILE_NAMES = ["gene_out.csv", "gene_out_cutoff.csv"]
 LEAF_FONT_SIZE = 7.5
-GENE_ANALYSIS_OUTPUT_FILE = "gene_out.csv"
 BLANK_SPACE = "-"
 PROB_PRECISION = 3
 
@@ -46,7 +46,7 @@ def run():
         print "Performing Heirarchical Clustering ..."
         performHeirarchicalClustering(geneList, disorderMap, scoreMap, i)
         print "Conducting genetic analysis ..."
-        conductGeneAnalysis(geneList, disorderMap)
+        conductGeneAnalysis(geneList, disorderMap, OUTPUT_FILE_NAMES[i])
 
 def getTargetDisorderMap():
     inputFile = open(TARGET_FILE_NAME, "r")
@@ -84,12 +84,10 @@ def performHeirarchicalClustering(geneList, disorderMap, scoreMap, imageNameInde
     distanceMatrix = dist.squareform(dist.pdist(dataMatrix))
     linkageMatrix = hier.linkage(distanceMatrix)
     dendrogram = hier.dendrogram(linkageMatrix, labels=disorderList, leaf_font_size = LEAF_FONT_SIZE)
-    #leaves = dendrogram["leaves"]
-    #reorderedData = dataMatrix[leaves,:]
     pylab.savefig(OUTPUT_IMAGE_NAMES[imageNameIndex])
     pylab.cla()
 
-def conductGeneAnalysis(geneList, disorderMap):
+def conductGeneAnalysis(geneList, disorderMap, outFileName):
     resultList = list()
     disorderList = sorted(disorderMap.keys())
     for gene in geneList:
@@ -107,10 +105,7 @@ def conductGeneAnalysis(geneList, disorderMap):
         for disorder in disorders:
             overlapMap[disorder][len(disorders)] += 1
         pooledOverlap[len(disorders)] += 1
-    #print resultList
-    #print len(resultList)
-    #print disorderList
-    outFile = open(GENE_ANALYSIS_OUTPUT_FILE, 'w')
+    outFile = open(outFileName, 'w')
     outFile.write(DELIMITER.join(disorderList) + "\n \n")
     overlapLists = list()
     for disorder in disorderList:
@@ -122,14 +117,6 @@ def conductGeneAnalysis(geneList, disorderMap):
     for overlapList in overlapLists:
         outFile.write(DELIMITER.join(getProbList(overlapList)) + "\n")
     outFile.write("\n")
-    # TODO: Remove this block        
-    print pooledOverlap
-    print getProbList(pooledOverlap)
-    for disorder in disorderList:
-        print disorder
-        print overlapMap[disorder]
-        print getProbList(overlapMap[disorder])
-
     makeConnectionMatrix(disorderList, disorderMap, outFile)
     outFile.close()
 
@@ -141,7 +128,6 @@ def getProbList(countList):
     return [str(round(float(count) / total, PROB_PRECISION)) for count in countList]
 
 def makeConnectionMatrix(disorderList, disorderMap, outFile):
-    # connectionMatrix = [[0 for disorder in disorderList] for disorder in disorderList]
     disorderList.insert(0, " ")
     numDisorders = len(disorderList)
     for x in range(numDisorders):
