@@ -1,5 +1,6 @@
 
 import re
+import sys
 
 DISEASES_LIST = "diseases.txt"
 OUTFILE_NAME = "temp.txt"
@@ -29,4 +30,6 @@ def regexMatch(regexStr, disease):
 
 # Only run when not called via import
 if __name__ == "__main__":
-    run()
+    if regexMatch(sys.argv[1], sys.argv[2]):
+        print "yes"
+    print ""

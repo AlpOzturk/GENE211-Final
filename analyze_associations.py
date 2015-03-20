@@ -1,12 +1,12 @@
 
 import sys
+import subprocess
 import numpy
 import pylab
 import scipy
 import scipy.cluster.hierarchy as hier
 import scipy.spatial.distance as dist
 from dis_gen_net_parser import parseDisGenNet
-from regex_tester import regexMatch
 
 
 
@@ -42,6 +42,7 @@ def run():
             print disorder + ": " + str(len(disorderMap[disorder]))
             geneList = geneList.union(disorderMap[disorder])
         geneList = list(geneList)
+        print "Total: " + str(len(geneList))
         geneList.sort()
         print "Performing Heirarchical Clustering ..."
         performHeirarchicalClustering(geneList, disorderMap, scoreMap, i)
@@ -59,12 +60,15 @@ def getTargetDisorderMap():
 
 def processAssociations(associations, regexMap, scoreCutoff):
     disorderMap = dict()
-    scoreMap = dict() 
+    scoreMap = dict()
+    counter = 0
     for association in associations:
+        counter+=1
+        print counter, " of ", str(len(associations))
         gene, disease, score = association
         if score > scoreCutoff:
             for regexStr in regexMap:
-                if regexMatch(regexStr, disease):
+                if subprocess.check_output(["python", "regex_tester.py", regexStr, disease]):
                     actualDisorder = regexMap[regexStr]
                     genesOfDisorder = disorderMap.get(actualDisorder, set())
                     genesOfDisorder.add(gene)
